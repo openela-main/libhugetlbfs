@@ -1,0 +1,74 @@
+From 865d160eff7e6c69968d0196272030f206dd3430 Mon Sep 17 00:00:00 2001
+Message-Id: <865d160eff7e6c69968d0196272030f206dd3430.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:29 +0530
+Subject: [RHEL7 PATCH 02/31] tests: slbpacaflush: Use online cpus only
+
+This ensures that the two cpus between which the thread is
+migrated are online. For offline cpus, sched_setaffinity()
+will always fail.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/slbpacaflush.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/tests/slbpacaflush.c b/tests/slbpacaflush.c
+index 8893c4d..765e069 100644
+--- a/tests/slbpacaflush.c
++++ b/tests/slbpacaflush.c
+@@ -57,29 +57,32 @@ int main(int argc, char *argv[])
+ 	int fd;
+ 	void *p;
+ 	volatile unsigned long *q;
+-	int err;
++	int online_cpus[2], err;
+ 	cpu_set_t cpu0, cpu1;
+ 
+ 	test_init(argc, argv);
+ 
+ 	hpage_size = check_hugepagesize();
++	check_online_cpus(online_cpus, 2);
+ 
+ 	fd = hugetlbfs_unlinked_fd();
+ 	if (fd < 0)
+ 		FAIL("hugetlbfs_unlinked_fd()");
+ 
+ 	CPU_ZERO(&cpu0);
+-	CPU_SET(0, &cpu0);
++	CPU_SET(online_cpus[0], &cpu0);
+ 	CPU_ZERO(&cpu1);
+-	CPU_SET(1, &cpu1);
++	CPU_SET(online_cpus[1], &cpu1);
+ 
+ 	err = sched_setaffinity(getpid(), CPU_SETSIZE/8, &cpu0);
+ 	if (err != 0)
+-		CONFIG("sched_setaffinity(cpu0): %s", strerror(errno));
++		CONFIG("sched_setaffinity(cpu%d): %s", online_cpus[0],
++				strerror(errno));
+ 
+ 	err = sched_setaffinity(getpid(), CPU_SETSIZE/8, &cpu1);
+ 	if (err != 0)
+-		CONFIG("sched_setaffinity(): %s", strerror(errno));
++		CONFIG("sched_setaffinity(cpu%d): %s", online_cpus[1],
++				strerror(errno));
+ 
+ 	p = mmap(NULL, hpage_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+ 	if (p == MAP_FAILED)
+@@ -87,7 +90,8 @@ int main(int argc, char *argv[])
+ 
+ 	err = sched_setaffinity(getpid(), CPU_SETSIZE/8, &cpu0);
+ 	if (err != 0)
+-		CONFIG("sched_setaffinity(cpu0): %s", strerror(errno));
++		CONFIG("sched_setaffinity(cpu%d): %s", online_cpus[0],
++				strerror(errno));
+ 
+ 	q = (volatile unsigned long *)(p + getpagesize());
+ 	*q = 0xdeadbeef;
+-- 
+1.8.3.1
+

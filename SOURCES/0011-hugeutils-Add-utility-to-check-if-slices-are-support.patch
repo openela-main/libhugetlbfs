@@ -1,0 +1,72 @@
+From 8cc33a134681892a71a4f67397bb13a541bb463e Mon Sep 17 00:00:00 2001
+Message-Id: <8cc33a134681892a71a4f67397bb13a541bb463e.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:38 +0530
+Subject: [RHEL7 PATCH 11/31] hugeutils: Add utility to check if slices are
+ supported
+
+This adds an utility to check if the current processor
+architecture supports slices. Slices are used to divide
+up a virtual address space and put certain restrictions
+like on powerpc64 with Hash MMU where one can have only
+one page size per slice.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ hugeutils.c              | 21 +++++++++++++++++++++
+ libhugetlbfs_privutils.h |  3 +++
+ 2 files changed, 24 insertions(+)
+
+diff --git a/hugeutils.c b/hugeutils.c
+index fc64946..e573622 100644
+--- a/hugeutils.c
++++ b/hugeutils.c
+@@ -800,6 +800,27 @@ int hpool_sizes(struct hpage_pool *pools, int pcnt)
+ 	return (which < pcnt) ? which : -1;
+ }
+ 
++int arch_has_slice_support(void)
++{
++#ifdef __powerpc64__
++	char mmu_type[16];
++	FILE *fp;
++
++	fp = popen("cat /proc/cpuinfo | grep MMU | awk '{ print $3}'", "r");
++	if (!fp || fscanf(fp, "%s", mmu_type) < 0) {
++		ERROR("Failed to determine MMU type\n");
++		abort();
++	}
++
++	pclose(fp);
++	return strcmp(mmu_type, "Hash") == 0;
++#elif defined(__powerpc__) && !defined(PPC_NO_SEGMENTS)
++	return 1;
++#else
++	return 0;
++#endif
++}
++
+ /*
+  * If we have a default page size then we support hugepages.
+  */
+diff --git a/libhugetlbfs_privutils.h b/libhugetlbfs_privutils.h
+index 149e42f..8b12fed 100644
+--- a/libhugetlbfs_privutils.h
++++ b/libhugetlbfs_privutils.h
+@@ -53,6 +53,9 @@ int set_nr_hugepages(long pagesize, unsigned long val);
+ #define set_nr_overcommit_hugepages __pu_set_nr_overcommit_hugepages
+ int set_nr_overcommit_hugepages(long pagesize, unsigned long val);
+ 
++#define arch_has_slice_support __pu_arch_has_slice_support
++int arch_has_slice_support(void);
++
+ #define kernel_has_hugepages __pu_kernel_has_hugepages
+ int kernel_has_hugepages(void);
+ 
+-- 
+1.8.3.1
+

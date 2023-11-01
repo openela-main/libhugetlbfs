@@ -1,0 +1,35 @@
+From e5f91fcc3e6bd0a610e47e51891f4c1669d2f8b1 Mon Sep 17 00:00:00 2001
+Message-Id: <e5f91fcc3e6bd0a610e47e51891f4c1669d2f8b1.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 17 Aug 2019 20:59:47 +1000
+Subject: [RHEL7 PATCH 23/31] tests: Avoid explicit type() comparison in runner
+ script
+
+Using isinstance() is the more modern idiom, and won't cause complications
+in porting to Python3.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/run_tests.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index f812923..e2025fe 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -309,7 +309,7 @@ def check_linkhuge_tests():
+ def print_cmd(pagesize, bits, cmd, env):
+     if env:
+         print(' '.join(['%s=%s' % (k, v) for k, v in env.items()]), end=" ")
+-    if type(cmd) != types.StringType:
++    if not isinstance(cmd, str):
+         cmd = ' '.join(cmd)
+     print("%s (%s: %i):\t" % (cmd, pretty_page_size(pagesize), bits), end="")
+     sys.stdout.flush()
+-- 
+1.8.3.1
+

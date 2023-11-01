@@ -1,0 +1,32 @@
+From 4326f49e3c3246443b52f319cefbc3d296e09e64 Mon Sep 17 00:00:00 2001
+Message-Id: <4326f49e3c3246443b52f319cefbc3d296e09e64.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 17 Aug 2019 20:59:43 +1000
+Subject: [RHEL7 PATCH 19/31] Be explicit about using Python2 in the test
+ script
+
+Since Python2 is now end-of-life, distros are increasingly not having bare
+"python" refer to the Python2 interpreter.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/run_tests.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index b132da2..721c1af 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env python
++#! /usr/bin/python2
+ 
+ import subprocess
+ import types
+-- 
+1.8.3.1
+

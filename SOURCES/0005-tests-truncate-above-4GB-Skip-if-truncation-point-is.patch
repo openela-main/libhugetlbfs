@@ -1,0 +1,50 @@
+From 2a63852ac9358cdddce9944aade1d443f686246a Mon Sep 17 00:00:00 2001
+Message-Id: <2a63852ac9358cdddce9944aade1d443f686246a.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:32 +0530
+Subject: [RHEL7 PATCH 05/31] tests: truncate-above-4GB: Skip if truncation
+ point is not aligned
+
+Attempting ftruncate() on a hugetlbfs file descriptor requires
+the truncation point to be aligned to the huge page size. So,
+this test is not applicable for huge page sizes greater that
+are either greater than or not a factor of the truncation point.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/truncate_above_4GB.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/tests/truncate_above_4GB.c b/tests/truncate_above_4GB.c
+index 4c427fc..2e29931 100644
+--- a/tests/truncate_above_4GB.c
++++ b/tests/truncate_above_4GB.c
+@@ -79,6 +79,13 @@ int main(int argc, char *argv[])
+ 
+ 	page_size = getpagesize();
+ 	hpage_size = check_hugepagesize();
++	truncate_point = FOURGIG;
++
++	if (hpage_size > truncate_point)
++		CONFIG("Huge page size is too large");
++
++	if (truncate_point % hpage_size > 0)
++		CONFIG("Truncation point is not aligned to huge page size");
+ 
+ 	check_free_huge_pages(3);
+ 
+@@ -86,7 +93,6 @@ int main(int argc, char *argv[])
+ 	if (fd < 0)
+ 		FAIL("hugetlbfs_unlinked_fd()");
+ 
+-	truncate_point = FOURGIG;
+ 	buggy_offset = truncate_point / (hpage_size / page_size);
+ 	buggy_offset = ALIGN(buggy_offset, hpage_size);
+ 
+-- 
+1.8.3.1
+

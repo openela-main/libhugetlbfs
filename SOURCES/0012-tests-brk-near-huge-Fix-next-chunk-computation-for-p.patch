@@ -1,0 +1,38 @@
+From 1329c4f5f4d201724d379d43dc5d516d1c9356dc Mon Sep 17 00:00:00 2001
+Message-Id: <1329c4f5f4d201724d379d43dc5d516d1c9356dc.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:39 +0530
+Subject: [RHEL7 PATCH 12/31] tests: brk-near-huge: Fix next chunk computation
+ for powerpc64
+
+For powerpc64, the use of slices applies only to Hash MMU.
+Hence, when determining the next chunk size, ensure that
+the address is aligned to the slice size for Hash MMU and
+the huge page size otherwise.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/brk_near_huge.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/tests/brk_near_huge.c b/tests/brk_near_huge.c
+index f6d1e07..c9662f4 100644
+--- a/tests/brk_near_huge.c
++++ b/tests/brk_near_huge.c
+@@ -40,6 +40,9 @@
+ #ifdef __powerpc64__
+ void *next_chunk(void *addr)
+ {
++	if (!arch_has_slice_support())
++		return PALIGN(addr, gethugepagesize());
++
+ 	if ((unsigned long)addr < 0x100000000UL)
+ 		/* 256M segments below 4G */
+ 		return PALIGN(addr, 0x10000000UL);
+-- 
+1.8.3.1
+
