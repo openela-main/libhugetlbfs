@@ -1,0 +1,59 @@
+From a4879cc4f88b560958950d9277ba0df487b145f4 Mon Sep 17 00:00:00 2001
+Message-Id: <a4879cc4f88b560958950d9277ba0df487b145f4.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:36 +0530
+Subject: [RHEL7 PATCH 09/31] tests: Add utility to check if huge pages are
+ gigantic
+
+This adds a test utility to check if the currently selected
+huge page size corresponds to that of a gigantic page.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/hugetests.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/tests/hugetests.h b/tests/hugetests.h
+index e3179e6..bc4e16a 100644
+--- a/tests/hugetests.h
++++ b/tests/hugetests.h
+@@ -22,6 +22,7 @@
+ 
+ #include <errno.h>
+ #include <string.h>
++#include <unistd.h>
+ 
+ #include "libhugetlbfs_privutils.h"
+ #include "libhugetlbfs_testprobes.h"
+@@ -136,6 +137,24 @@ static inline long check_hugepagesize()
+ 	return __hpage_size;
+ }
+ 
++static inline void check_if_gigantic_page(void)
++{
++	long page_size, hpage_size, max_order;
++	FILE *fp;
++
++	page_size = sysconf(_SC_PAGESIZE);
++	hpage_size = gethugepagesize();
++	fp = popen("cat /proc/pagetypeinfo | "
++		   "awk '/Free pages count per migrate type at order/ "
++		   "{print $NF}'", "r");
++	if (!fp || fscanf(fp, "%lu", &max_order) < 0)
++		FAIL("Couldn't determine max page allocation order");
++
++	pclose(fp);
++	if (hpage_size > ((1 << max_order) * page_size))
++		CONFIG("Gigantic pages are not supported");
++}
++
+ int using_system_hpage_size(const char *mount);
+ 
+ /* WARNING: Racy -- use for test cases only! */
+-- 
+1.8.3.1
+

@@ -1,0 +1,51 @@
+From e9482399d7eee7199a4a31fe943c940f52a245ba Mon Sep 17 00:00:00 2001
+Message-Id: <e9482399d7eee7199a4a31fe943c940f52a245ba.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Mon, 19 Aug 2019 14:48:38 +0530
+Subject: [RHEL7 PATCH 31/31] tests: noresv-preserve-resv-page: Fix failure in
+ case of overcommit
+
+This adds an additional check to see if the mapping created
+with MAP_NORESERVE does not raise a SIGBUS upon being written
+to because nr_overcommit_pages is set to a non-zero value and
+surplus pages gets provisioned. In this case, the test should
+pass.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/noresv-preserve-resv-page.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/tests/noresv-preserve-resv-page.c b/tests/noresv-preserve-resv-page.c
+index b7b8043..b93bf36 100644
+--- a/tests/noresv-preserve-resv-page.c
++++ b/tests/noresv-preserve-resv-page.c
+@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
+ {
+ 	long hpage_size;
+ 	int nr_hugepages;
++	int surp_hugepages;
+ 	int fd1, fd2, err;
+ 	char *p, *q;
+ 	struct sigaction sa = {
+@@ -104,6 +105,13 @@ int main(int argc, char *argv[])
+ 
+ 	verbose_printf("Write to %p to steal reserved page\n", q);
+ 
++	surp_hugepages = get_huge_page_counter(hpage_size, HUGEPAGES_SURP);
+ 	test_write(q);
++
++	/* Provisioning succeeded because of overcommit */
++	if (get_huge_page_counter(hpage_size, HUGEPAGES_SURP) ==
++	    surp_hugepages + 1)
++		PASS();
++
+ 	FAIL("Steal reserved page");
+ }
+-- 
+1.8.3.1
+

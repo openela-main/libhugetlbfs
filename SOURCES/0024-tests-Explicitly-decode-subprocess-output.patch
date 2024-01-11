@@ -1,0 +1,62 @@
+From 3482dcfe74102da1e2d95d8adbc29940c06b1fef Mon Sep 17 00:00:00 2001
+Message-Id: <3482dcfe74102da1e2d95d8adbc29940c06b1fef.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 17 Aug 2019 20:59:48 +1000
+Subject: [RHEL7 PATCH 24/31] tests: Explicitly decode subprocess output
+
+The output we get from subprocesses is logically a sequence of bytes, but
+we want to treat it as Python strings, which means decoding it into Unicode
+based on some encoding.
+
+In Python2 we can get away with skipping that step, but in Python3 we won't
+be able to.  So, to get ready, add an explicit decode() step, using the
+system default encoding (probably UTF-8 in most cases).
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/run_tests.py | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index e2025fe..79e0385 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -48,7 +48,7 @@ def bash(cmd):
+     except KeyboardInterrupt:
+         # Abort and mark this a strange test result
+         return (127, "")
+-    out = p.stdout.read().strip()
++    out = p.stdout.read().decode().strip()
+     return (rc, out)
+ 
+ def snapshot_pool_state():
+@@ -80,7 +80,7 @@ def run_test_prog(bits, pagesize, cmd, **env):
+         return (None, "")
+     except OSError as e:
+         return (-e.errno, "")
+-    out = p.stdout.read().strip()
++    out = p.stdout.read().decode().strip()
+ 
+     if paranoid_pool_check:
+         afterpool = snapshot_pool_state()
+@@ -247,9 +247,11 @@ def get_pagesizes():
+     sizes = set()
+     out = ""
+     (rc, out) = bash("../obj/hugeadm --page-sizes")
+-    if rc != 0 or out == "": return sizes
++    if rc != 0 or out == "":
++        return sizes
+ 
+-    for size in out.split("\n"): sizes.add(int(size))
++    for size in out.split("\n"):
++        sizes.add(int(size))
+     return sizes
+ 
+ def get_wordsizes():
+-- 
+1.8.3.1
+

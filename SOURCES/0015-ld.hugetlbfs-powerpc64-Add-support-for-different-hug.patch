@@ -1,0 +1,62 @@
+From adb3feea5dde087d7bb8017e5b8da2da548473bf Mon Sep 17 00:00:00 2001
+Message-Id: <adb3feea5dde087d7bb8017e5b8da2da548473bf.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Wed, 12 Jun 2019 12:34:32 +0530
+Subject: [RHEL7 PATCH 15/31] ld.hugetlbfs: powerpc64: Add support for
+ different huge page sizes
+
+This ensures that the page and slice sizes are determined by
+looking at the default huge page size and MMU type rather than
+having them hardcoded.
+
+This is important because powerpc64 supports different huge
+page sizes based on the MMU type. Hash MMU supports 16MB and
+16GB whereas Radix MMU supports 2MB and 1GB.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ ld.hugetlbfs | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/ld.hugetlbfs b/ld.hugetlbfs
+index 388f7b4..6ee8238 100755
+--- a/ld.hugetlbfs
++++ b/ld.hugetlbfs
+@@ -105,8 +105,16 @@ fi
+ 
+ MB=$((1024*1024))
+ case "$EMU" in
+-elf32ppclinux|elf64ppc)	HPAGE_SIZE=$((16*$MB)) SLICE_SIZE=$((256*$MB)) ;;
+-elf64lppc)		HPAGE_SIZE=$((16*$MB)) SLICE_SIZE=$((256*$MB)) ;;
++elf32ppclinux)		HPAGE_SIZE=$((16*$MB)) SLICE_SIZE=$((256*$MB)) ;;
++elf64ppc|elf64lppc)
++	hpage_kb=$(cat /proc/meminfo  | grep Hugepagesize: | awk '{print $2}')
++	MMU_TYPE=$(cat /proc/cpuinfo  | grep MMU | awk '{ print $3}')
++	HPAGE_SIZE=$((hpage_kb * 1024))
++	if [ "$MMU_TYPE" == "Hash" ] ; then
++		SLICE_SIZE=$((256*$MB))
++	else
++		SLICE_SIZE=$HPAGE_SIZE
++	fi ;;
+ elf_i386|elf_x86_64)	HPAGE_SIZE=$((4*$MB)) SLICE_SIZE=$HPAGE_SIZE ;;
+ elf_s390|elf64_s390)	HPAGE_SIZE=$((1*$MB)) SLICE_SIZE=$HPAGE_SIZE ;;
+ armelf*_linux_eabi|aarch64elf*|aarch64linux*)
+@@ -124,6 +132,11 @@ if [ "$HTLB_ALIGN" == "slice" ]; then
+ 	case "$EMU" in
+ 	armelf*_linux_eabi|aarch64elf*|aarch64linux*)	HTLBOPTS="$HTLBOPTS -Ttext-segment=$SLICE_SIZE" ;;
+ 	elf_i386)		HTLBOPTS="$HTLBOPTS -Ttext-segment=0x08000000" ;;
++	elf64ppc|elf64lppc)
++		if [ "$MMU_TYPE" == "Hash" ] ; then
++			printf -v TEXTADDR "%x" "$SLICE_SIZE"
++			HTLBOPTS="$HTLBOPTS -Ttext-segment=$TEXTADDR"
++		fi ;;
+ 	esac
+ fi
+ 
+-- 
+1.8.3.1
+

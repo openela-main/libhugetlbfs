@@ -1,0 +1,43 @@
+From 5246d996e621274a2cc22282451bb60c10d59227 Mon Sep 17 00:00:00 2001
+Message-Id: <5246d996e621274a2cc22282451bb60c10d59227.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 17 Aug 2019 20:59:45 +1000
+Subject: [RHEL7 PATCH 21/31] Remove backtick operator from test runner script
+
+The `` operator doesn't exist in Python3, so remove it to avoid future
+porting problems.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/run_tests.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index 47eb183..13a404a 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -226,7 +226,7 @@ def clear_hpages():
+     cleaned up automatically and must be removed to free up the huge pages.
+     """
+     for mount in mounts:
+-        dir = mount + "/elflink-uid-" + `os.getuid()`
++        dir = mount + "/elflink-uid-" + repr(os.getuid())
+         for root, dirs, files in os.walk(dir, topdown=False):
+             for name in files:
+                 os.remove(os.path.join(root, name))
+@@ -497,7 +497,7 @@ def setup_shm_sysctl(limit):
+         sysctls[f] = fh.read()
+         fh.close()
+         fh = open(f, "w")
+-        fh.write(`limit`)
++        fh.write(repr(limit))
+         fh.close()
+     print("set shmmax limit to %s" % limit)
+     return sysctls
+-- 
+1.8.3.1
+

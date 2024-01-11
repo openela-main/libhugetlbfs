@@ -1,0 +1,35 @@
+From 2f88d3a2b29f181e744cc59f5e0889588f67588f Mon Sep 17 00:00:00 2001
+Message-Id: <2f88d3a2b29f181e744cc59f5e0889588f67588f.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 17 Aug 2019 20:59:46 +1000
+Subject: [RHEL7 PATCH 22/31] tests: Avoid old-style except syntax in the test
+ runner script
+
+The "except Foo as bar" syntax is the modern style and will be easier to
+port to Python3.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/run_tests.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index 13a404a..f812923 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -755,7 +755,7 @@ def main():
+ 
+     try:
+         opts, args = getopt.getopt(sys.argv[1:], "vVft:b:p:c:lh")
+-    except getopt.GetoptError, err:
++    except getopt.GetoptError as err:
+         print(str(err))
+         sys.exit(1)
+     for opt, arg in opts:
+-- 
+1.8.3.1
+

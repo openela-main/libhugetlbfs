@@ -1,0 +1,49 @@
+From 2d41ec367199f9f9d4b7caf00c3be25030a7a873 Mon Sep 17 00:00:00 2001
+Message-Id: <2d41ec367199f9f9d4b7caf00c3be25030a7a873.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:37 +0530
+Subject: [RHEL7 PATCH 10/31] tests: counters: Skip if using gigantic huge
+ pages
+
+The kernel does not allow setting an overcommit limit for
+gigantic huge pages, i.e. any page size beyond the max page
+allocation order. For such cases, nr_overcommit_hugepages
+cannot be modified and is always zero. So, skip this test
+as mmap() using a hugetlbfs file descriptor will fail when
+both nr_hugepages and nr_overcommit_hugepages are zero.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/counters.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/tests/counters.c b/tests/counters.c
+index 0284809..34b1ef3 100644
+--- a/tests/counters.c
++++ b/tests/counters.c
+@@ -83,7 +83,17 @@ void verify_dynamic_pool_support(void)
+ 	saved_oc_hugepages = get_huge_page_counter(hpage_size, HUGEPAGES_OC);
+ 	if (saved_oc_hugepages < 0)
+ 		FAIL("Kernel appears to lack dynamic hugetlb pool support");
+-	set_nr_overcommit_hugepages(hpage_size, 10);
++	if (set_nr_overcommit_hugepages(hpage_size, 10) < 0) {
++		/*
++		 * In case writing to nr_overcommit_hugepages failed with the
++		 * reason that it was an attempt to write an invalid argument,
++		 * it might be because the page size corresponds to gigantic
++		 * pages which do not support this feature.
++		 */
++		if (errno == EINVAL)
++			check_if_gigantic_page();
++		FAIL("Couldn't set overcommit limit");
++	}
+ }
+ 
+ void bad_value(int line, const char *name, long expect, long actual)
+-- 
+1.8.3.1
+

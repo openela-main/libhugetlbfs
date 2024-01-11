@@ -1,0 +1,36 @@
+From 1c69af9d9c53361f64c181d7b8ed7936299f9201 Mon Sep 17 00:00:00 2001
+Message-Id: <1c69af9d9c53361f64c181d7b8ed7936299f9201.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Mon, 19 Aug 2019 11:46:25 +0530
+Subject: [RHEL7 PATCH 30/31] Makefile: Remove cpupcstat from man page target
+
+This fixes the man page installation target by removing
+a reference to the man page for the deprecated cpupcstat
+script.
+
+Fixes: 0d29e25 ("Remove man page for cpupcstat")
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 51e41f0..a107a62 100644
+--- a/Makefile
++++ b/Makefile
+@@ -14,7 +14,7 @@ INSTALL_MAN3 = get_huge_pages.3 get_hugepage_region.3 gethugepagesize.3 \
+ 		gethugepagesizes.3 getpagesizes.3 hugetlbfs_find_path.3 \
+ 		hugetlbfs_test_path.3 hugetlbfs_unlinked_fd.3
+ INSTALL_MAN7 = libhugetlbfs.7
+-INSTALL_MAN8 = hugectl.8 hugeedit.8 hugeadm.8 cpupcstat.8
++INSTALL_MAN8 = hugectl.8 hugeedit.8 hugeadm.8
+ LDSCRIPT_TYPES = B BDT
+ LDSCRIPT_DIST_ELF = elf32ppclinux elf64ppc elf_i386 elf_x86_64
+ INSTALL_OBJSCRIPT = ld.hugetlbfs
+-- 
+1.8.3.1
+

@@ -1,0 +1,52 @@
+commit e7b3e6817421763eee37cb35ef8627bdd37a3690
+Author: Chunyu Hu <chuhu@redhat.com>
+Date:   Wed May 6 18:59:43 2020 +0800
+
+    Wait child with os.wait()
+    
+    os.popen() is an async method, it fork() child and exec() in child
+    with the arg command. If it's slow enough, main process could get
+    incomplete result.
+    
+    During our test, we find python3 is faster than python2,after coverting
+    to python3, 'groupadd' usually doesn't finish when the followed step iter
+    on groups, we would get '-1' as the groupid and lead to error.
+    
+    To reproduce it with python3:
+    /root/rpmbuild/BUILD/libhugetlbfs-2.21/huge_page_setup_helper.py <<EOF
+    128
+    hugepages
+    hugepages root
+    EOF
+    
+    ...
+    hugeadm:ERROR: Invalid group specification (-1)
+    ...
+    
+    Signed-off-by: Chunyu Hu <chuhu@redhat.com>
+
+diff --git a/huge_page_setup_helper.py b/huge_page_setup_helper.py
+index a9ba2bf..01fc8dc 100755
+--- a/huge_page_setup_helper.py
++++ b/huge_page_setup_helper.py
+@@ -169,6 +169,10 @@ else:
+         os.popen("/usr/sbin/groupadd %s" % userGroupReq)
+     else:
+         print("/usr/sbin/groupadd %s" % userGroupReq)
++
++    # wait for the groupadd finish
++    os.wait()
++
+     groupNames = os.popen("/usr/bin/getent group %s" % userGroupReq).readlines()
+     for line in groupNames:
+         curGroupName = line.split(":")[0]
+@@ -244,6 +248,9 @@ else:
+     print("/usr/bin/hugeadm --set-recommended-shmmax")
+     print()
+ 
++# wait for the hugepage setups finish
++os.wait()
++
+ # figure out what that shmmax value we just set was
+ hugeadmexplain = os.popen("/usr/bin/hugeadm --explain 2>/dev/null").readlines()
+ for line in hugeadmexplain:

@@ -1,0 +1,52 @@
+From 2f38664f81e1877f81b16ed327b540d69d175a5b Mon Sep 17 00:00:00 2001
+Message-Id: <2f38664f81e1877f81b16ed327b540d69d175a5b.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:31 +0530
+Subject: [RHEL7 PATCH 04/31] tests: task-size-overrun: Make test faster on
+ powerpc64
+
+As of now, powerpc64 supports 64TB, 128TB, 512TB, 1PB, 2PB and
+4PB user address space sizes with 4TB being the default for the
+newer kernels. With the relatively conservative increments that
+this test uses to find the task size, it takes a very long time
+but this can be made faster by also increasing the increment
+factor in steps of the different supported task sizes.
+
+Fixes: 02df38e ("Defined task size value to be 512T if it is more that 64Tb.")
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/task-size-overrun.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/tests/task-size-overrun.c b/tests/task-size-overrun.c
+index dc9ce0e..914ef65 100644
+--- a/tests/task-size-overrun.c
++++ b/tests/task-size-overrun.c
+@@ -83,8 +83,18 @@ static unsigned long find_task_size(void)
+ 		munmap(p, getpagesize());
+ 		addr += getpagesize();
+ #if defined(__powerpc64__)
+-		if (addr > (1UL << 46) && addr < (1UL << 49))
+-			addr = 1UL << 49;
++		if (addr > (1UL << 46) && addr < (1UL << 47))
++			addr = 1UL << 47;	/* 64TB */
++		else if (addr > (1UL << 47) && addr < (1UL << 48))
++			addr = 1UL << 48;	/* 128TB */
++		else if (addr > (1UL << 48) && addr < (1UL << 49))
++			addr = 1UL << 49;	/* 512TB */
++		else if (addr > (1UL << 49) && addr < (1UL << 50))
++			addr = 1UL << 50;	/* 1PB */
++		else if (addr > (1UL << 50) && addr < (1UL << 51))
++			addr = 1UL << 51;	/* 2PB */
++		else if (addr > (1UL << 51) && addr < (1UL << 52))
++			addr = 1UL << 52;	/* 4PB */
+ #endif
+ #if defined(__s390x__)
+ 		if (addr > (1UL << 42) && addr < (1UL << 53))
+-- 
+1.8.3.1
+

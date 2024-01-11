@@ -1,0 +1,44 @@
+From 413573f442f1abbea47e54683758281e2a770a68 Mon Sep 17 00:00:00 2001
+Message-Id: <413573f442f1abbea47e54683758281e2a770a68.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Eric B Munson <eric@munsonfam.org>
+Date: Sat, 17 Aug 2019 13:59:05 -0400
+Subject: [RHEL7 PATCH 29/31] Fix spelling of khugepaged options in hugeadm
+
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ hugeadm.c     | 2 +-
+ man/hugeadm.8 | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/hugeadm.c b/hugeadm.c
+index fe4211d..62e13ec 100644
+--- a/hugeadm.c
++++ b/hugeadm.c
+@@ -112,7 +112,7 @@ void print_usage()
+ 	CONT("should scan on each pass");
+ 	OPTION("--thp-khugepaged-scan-sleep <milliseconds>", "Time in ms to sleep between");
+ 	CONT("khugepaged passes");
+-	OPTION("--thp-khugepages-alloc-sleep <milliseconds>", "Time in ms for khugepaged");
++	OPTION("--thp-khugepaged-alloc-sleep <milliseconds>", "Time in ms for khugepaged");
+ 	CONT("to wait if there was a huge page allocation failure");
+ 	OPTION("--pool-pages-max <size|DEFAULT>:[+|-]<pagecount|memsize<G|M|K>>", "");
+ 	CONT("Adjust pool 'size' upper bound");
+diff --git a/man/hugeadm.8 b/man/hugeadm.8
+index 28de91e..6f17800 100644
+--- a/man/hugeadm.8
++++ b/man/hugeadm.8
+@@ -266,7 +266,7 @@ Configure the number of pages that khugepaged should scan on each pass
+ Configure how many milliseconds khugepaged should wait between passes
+ 
+ .TP
+-.B --thp-khugepages-alloc-sleep <milliseconds>
++.B --thp-khugepaged-alloc-sleep <milliseconds>
+ 
+ Configure how many milliseconds khugepaged should wait after failing to
+ allocate a huge page to throttle the next attempt.
+-- 
+1.8.3.1
+

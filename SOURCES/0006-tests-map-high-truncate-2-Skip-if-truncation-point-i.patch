@@ -1,0 +1,49 @@
+From 65c07c0f64ef1c97f9aea80d0c8470417e377a6a Mon Sep 17 00:00:00 2001
+Message-Id: <65c07c0f64ef1c97f9aea80d0c8470417e377a6a.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: Sandipan Das <sandipan@linux.ibm.com>
+Date: Thu, 15 Aug 2019 13:08:33 +0530
+Subject: [RHEL7 PATCH 06/31] tests: map-high-truncate-2: Skip if truncation
+ point is not aligned
+
+Attempting ftruncate() on a hugetlbfs file descriptor requires
+the truncation point to be aligned to the huge page size. So,
+this test is not applicable for huge page sizes greater that
+are either greater than or not a factor of the truncation point.
+
+Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+Signed-off-by: Eric B Munson <emunson@mgebm.net>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/map_high_truncate_2.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/tests/map_high_truncate_2.c b/tests/map_high_truncate_2.c
+index 2a2560b..fc44a13 100644
+--- a/tests/map_high_truncate_2.c
++++ b/tests/map_high_truncate_2.c
+@@ -56,6 +56,7 @@
+ #define TRUNCATE_POINT 0x60000000UL
+ #endif
+ #define HIGH_ADDR	0xa0000000UL
++#define FOURGIG		((off64_t)0x100000000ULL)
+ 
+ int main(int argc, char *argv[])
+ {
+@@ -69,6 +70,12 @@ int main(int argc, char *argv[])
+ 
+ 	hpage_size = check_hugepagesize();
+ 
++	if (hpage_size > TRUNCATE_POINT)
++		CONFIG("Huge page size is too large");
++
++	if (TRUNCATE_POINT % hpage_size)
++		CONFIG("Truncation point is not aligned to huge page size");
++
+ 	check_free_huge_pages(4);
+ 
+ 	fd = hugetlbfs_unlinked_fd();
+-- 
+1.8.3.1
+

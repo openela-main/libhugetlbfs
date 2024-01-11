@@ -1,0 +1,34 @@
+From 9380eba133bcc941437e2b0d664f550f6854d63b Mon Sep 17 00:00:00 2001
+Message-Id: <9380eba133bcc941437e2b0d664f550f6854d63b.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 17 Aug 2019 20:59:50 +1000
+Subject: [RHEL7 PATCH 26/31] tests: Switch test runner to Python3
+
+Python2 has been end-of-life for a while now, and some distros are no
+longer installing it by default.
+
+Previous cleanups mean the script is now both valid Python2 and Python3,
+so we can simply change the interpreter.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/run_tests.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index 2847417..018264d 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -1,4 +1,4 @@
+-#! /usr/bin/python2
++#! /usr/bin/python3
+ 
+ from __future__ import print_function
+ from __future__ import division
+-- 
+1.8.3.1
+

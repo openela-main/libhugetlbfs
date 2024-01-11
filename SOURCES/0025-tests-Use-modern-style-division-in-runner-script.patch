@@ -1,0 +1,41 @@
+From b9b3e12c7be2c5a9ff67b3cdaad8679dbd1fe938 Mon Sep 17 00:00:00 2001
+Message-Id: <b9b3e12c7be2c5a9ff67b3cdaad8679dbd1fe938.1566225007.git.aquini@redhat.com>
+In-Reply-To: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+References: <d42f467a923dfc09309acb7a83b42e3285fbd8f4.1566225007.git.aquini@redhat.com>
+From: David Gibson <david@gibson.dropbear.id.au>
+Date: Sat, 17 Aug 2019 20:59:49 +1000
+Subject: [RHEL7 PATCH 25/31] tests: Use modern style division in runner script
+
+This is the current norm and will reduce changes for moving to Python3.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Eric B Munson <eric@munsonfam.org>
+Signed-off-by: Rafael Aquini <aquini@redhat.com>
+---
+ tests/run_tests.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index 79e0385..2847417 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -1,6 +1,7 @@
+ #! /usr/bin/python2
+ 
+ from __future__ import print_function
++from __future__ import division
+ 
+ import subprocess
+ import types
+@@ -723,7 +724,7 @@ def stress_tests():
+     # This is to catch off-by-ones or races in the kernel allocated that
+     # can make allocating all hugepages a problem
+     if nr_pages > 1:
+-        do_shm_test(("shm-fork", repr(threads), repr(nr_pages / 2)), limit)
++        do_shm_test(("shm-fork", repr(threads), repr(nr_pages // 2)), limit)
+     do_shm_test(("shm-fork", repr(threads), repr(nr_pages)), limit)
+ 
+     do_shm_test(("shm-getraw", repr(nr_pages), "/dev/full"), limit)
+-- 
+1.8.3.1
+
